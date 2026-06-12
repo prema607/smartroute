@@ -1,131 +1,79 @@
 import streamlit as st
 import pandas as pd
 
-# Page Configuration
 st.set_page_config(
-    page_title="SmartRoute AI Agent",
-    page_icon="📍",
-    layout="wide"
+    page_title="SmartRoute",
+    page_icon="📍"
 )
 
-# Title
 st.title("📍 SmartRoute")
 st.subheader("Autonomous Address Resolution Agent")
 
-# Load Orders
-df = pd.read_csv("orders.csv")
+# Sample Data (No CSV Required)
+df = pd.DataFrame({
+    "order_id": [101, 102, 103, 104, 105],
+    "customer": ["Ramesh", "Sita", "Ravi", "Anjali", "Kiran"],
+    "address": [
+        "Behind old water tank near Hanuman temple",
+        "H.No 2-45 Main Road Vizag",
+        "Blue gate beside ration shop",
+        "Door No 5-12 Gandhi Road Visakhapatnam",
+        "Near bus stand opposite school"
+    ]
+})
 
-# Select Order
 order_id = st.selectbox(
     "Select Order ID",
     df["order_id"]
 )
 
-# Get Selected Order
-selected_order = df[df["order_id"] == order_id].iloc[0]
+selected = df[df["order_id"] == order_id].iloc[0]
 
-customer = selected_order["customer"]
-address = selected_order["address"]
+customer = selected["customer"]
+address = selected["address"]
 
-st.markdown("---")
+st.write("### Customer")
+st.info(customer)
 
-# Display Order Details
-col1, col2 = st.columns(2)
+st.write("### Original Address")
+st.warning(address)
 
-with col1:
-    st.write("### Customer")
-    st.info(customer)
+keywords = ["near", "behind", "beside", "opposite"]
 
-with col2:
-    st.write("### Original Address")
-    st.warning(address)
+vague = any(word in address.lower() for word in keywords)
 
-st.markdown("---")
-
-# Ambiguous Address Detection
-keywords = [
-    "near",
-    "behind",
-    "beside",
-    "opposite"
-]
-
-vague = False
-
-for word in keywords:
-    if word in address.lower():
-        vague = True
-
-# If Ambiguous
 if vague:
 
     st.error("⚠ Ambiguous Address Detected")
 
-    st.write("### 🤖 AI Agent Analysis")
-
-    st.write("""
-    This address appears incomplete because it contains
-    landmark-based directions and lacks a precise location.
-    """)
-
-    confidence = 92
-
-    st.metric(
-        label="Confidence Score",
-        value=f"{confidence}%"
-    )
-
-    st.markdown("---")
-
-    st.write("### 🤖 Agent Message")
-
     st.info(
-        "Please provide an additional landmark or location detail."
+        "Please provide an additional landmark."
     )
 
-    customer_response = st.text_input(
+    response = st.text_input(
         "Customer Response"
     )
 
-    if customer_response:
+    if response:
 
         final_address = (
-            address + ", " + customer_response
+            address + ", " + response
         )
 
-        st.markdown("---")
+        st.success(
+            "Address Successfully Resolved"
+        )
 
-        st.success("✅ Address Successfully Resolved")
-
-        st.write("### 📍 Final Driver Instructions")
+        st.write(
+            "### Driver Instructions"
+        )
 
         st.code(final_address)
 
-        st.write("### 🚚 Delivery Status")
-
-        st.success(
-            "Ready for Delivery"
-        )
-
 else:
 
-    st.success("✅ Address Looks Clear")
-
-    st.metric(
-        label="Confidence Score",
-        value="98%"
+    st.success(
+        "Address Looks Clear"
     )
-
-    st.write("### 📍 Driver Instructions")
 
     st.code(address)
-
-    st.success(
-        "Ready for Delivery"
-    )
-
-st.markdown("---")
-
-st.caption(
-    "SmartRoute MVP | ScriptedByHer Submission"
-)
